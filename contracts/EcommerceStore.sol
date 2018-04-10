@@ -1,5 +1,7 @@
 pragma solidity ^0.4.13;
 
+import "../contracts/Escrow.sol";
+
 contract EcommerceStore {
     enum ProductStatus {Open, Sold, Unsold}
     enum ProductCondition {New, Used}
@@ -11,8 +13,11 @@ contract EcommerceStore {
     // 跟踪谁插入了商品。键为商家的账户地址，值为 productIndex 到 Product 结果的 mapping.
     mapping(address => mapping(uint => Product)) stores;
 
-    // 用于跟踪哪些商品在哪个商店
+    // 用于跟踪商品在哪个商店
     mapping(uint => address) productIdInStore;
+
+    //    用于跟踪商品成交的第三方见证人
+    mapping(uint => address) productEscrow;
 
     struct Product {
         uint id;
@@ -29,7 +34,7 @@ contract EcommerceStore {
         uint totalBids;
         ProductStatus status;
         ProductCondition condition;
-        mapping (address => mapping (bytes32 => Bid)) bids; // 记录谁投了票
+        mapping(address => mapping(bytes32 => Bid)) bids; // 记录谁投了票
     }
 
     struct Bid {
@@ -43,6 +48,8 @@ contract EcommerceStore {
         productIndex = 0;
     }
 
+    event NewProduct(uint _productId, string _name, string _category, string _imageLink, string _descLink, uint _auctionStartTime, uint _auctionEndTime, uint _startPrice, uint _productCondition);
+
     function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _auctionStartTime,
         uint _auctionEndTime, uint _startPrice, uint _productCondition) public {
         require(_auctionStartTime < _auctionEndTime);
@@ -51,6 +58,7 @@ contract EcommerceStore {
             _startPrice, 0, 0, 0, 0, ProductStatus.Open, ProductCondition(_productCondition));
         stores[msg.sender][productIndex] = product;
         productIdInStore[productIndex] = msg.sender;
+        NewProduct(productIndex, _name, _category, _imageLink, _descLink, _auctionStartTime, _auctionEndTime, _startPrice, _productCondition);
     }
 
     function getProduct(uint _productId) view public returns (uint, string, string, string, string, uint, uint, uint, ProductStatus, ProductCondition) {
@@ -61,10 +69,10 @@ contract EcommerceStore {
 
     function bid(uint _productId, bytes32 _bid) payable public returns (bool) {
         Product storage product = stores[productIdInStore[_productId]][_productId];
-        require (now >= product.auctionStartTime);
-        require (now <= product.auctionEndTime);
-        require (msg.value > product.startPrice);
-        require (product.bids[msg.sender][_bid].bidder == 0);
+        require(now >= product.auctionStartTime);
+        require(now <= product.auctionEndTime);
+        require(msg.value > product.startPrice);
+        require(product.bids[msg.sender][_bid].bidder == 0);
         product.bids[msg.sender][_bid] = Bid(msg.sender, _productId, msg.value, false);
         product.totalBids += 1;
         return true;
@@ -72,18 +80,18 @@ contract EcommerceStore {
 
     function revealBid(uint _productId, string _amount, string _secret) public {
         Product storage product = stores[productIdInStore[_productId]][_productId];
-        require (now > product.auctionEndTime);
+        require(now > product.auctionEndTime);
         bytes32 sealedBid = sha3(_amount, _secret);
 
         Bid memory bidInfo = product.bids[msg.sender][sealedBid];
-        require (bidInfo.bidder > 0);
-        require (bidInfo.revealed == false);
+        require(bidInfo.bidder > 0);
+        require(bidInfo.revealed == false);
 
         uint refund;
 
         uint amount = stringToUint(_amount);
 
-        if(bidInfo.value < amount) {
+        if (bidInfo.value < amount) {
             // They didn't send enough amount, they lost
             refund = bidInfo.value;
         } else {
@@ -96,7 +104,8 @@ contract EcommerceStore {
             } else {
                 if (amount > product.highestBid) {
                     product.secondHighestBid = product.highestBid;
-                    product.highestBidder.transfer(product.highestBid); // 退回
+                    product.highestBidder.transfer(product.highestBid);
+                    // 退回
                     product.highestBidder = msg.sender;
                     product.highestBid = amount;
                     refund = bidInfo.value - amount;
@@ -134,5 +143,46 @@ contract EcommerceStore {
             }
         }
         return result;
+    }
+
+    function finalizeAuction(uint _productId) public {
+        Product memory product = stores[productIdInStore[_productId]][_productId];
+        // 48 hours to reveal the bid
+        require(now > product.auctionEndTime);
+        require(product.status == ProductStatus.Open);
+        require(product.highestBidder != msg.sender);
+        require(productIdInStore[_productId] != msg.sender);
+
+        if (product.totalBids == 0) {
+            product.status = ProductStatus.Unsold;
+        } else {
+            // Whoever finalizes the auction is the arbiter
+            //            Escrow escrow = (new Escrow()).value(product.secondHighestBid)(_productId, product.highestBidder, productIdInStore[_productId], msg.sender);
+            Escrow escrow = (new Escrow).value(product.secondHighestBid)(_productId, product.highestBidder, productIdInStore[_productId], msg.sender);
+
+            productEscrow[_productId] = address(escrow);
+            product.status = ProductStatus.Sold;
+            // The bidder only pays the amount equivalent to second highest bidder
+            // Refund the difference
+            uint refund = product.highestBid - product.secondHighestBid;
+            product.highestBidder.transfer(refund);
+
+        }
+    }
+
+    function escrowAddressForProduct(uint _productId) view public returns (address) {
+        return productEscrow[_productId];
+    }
+
+    function escrowInfo(uint _productId) view public returns (address, address, address, bool, uint, uint) {
+        return Escrow(productEscrow[_productId]).escrowInfo();
+    }
+
+    function releaseAmountToSeller(uint _productId) public {
+        Escrow(productEscrow[_productId]).releaseAmountToSeller(msg.sender);
+    }
+
+    function refundAmountToBuyer(uint _productId) public {
+        Escrow(productEscrow[_productId]).refundAmountToBuyer(msg.sender);
     }
 }

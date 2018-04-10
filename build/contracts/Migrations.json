@@ -70,15 +70,9 @@
       "events": {},
       "links": {},
       "address": "0x8cdaf0cd259887258bc13a92c0a6da92698644c0",
-      "updated_at": 1521794420573
-    },
-    "1521788087769": {
-      "events": {},
-      "links": {},
-      "address": "0x4b1327a491b4a102aa59eaf3ccc3bad030efc207",
-      "updated_at": 1521793152251
+      "updated_at": 1523329725245
     }
   },
   "schema_version": "0.0.5",
-  "updated_at": 1521794420573
+  "updated_at": 1523329725245
 }

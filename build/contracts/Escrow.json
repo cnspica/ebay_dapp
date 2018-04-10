@@ -1,0 +1,277 @@
+{
+  "contract_name": "Escrow",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "seller",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "refundCount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "address"
+        }
+      ],
+      "name": "releaseAmountToSeller",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "buyer",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "address"
+        }
+      ],
+      "name": "refundAmountToBuyer",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "amount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "releaseCount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "productId",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fundsDisbursed",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "escrowInfo",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        },
+        {
+          "name": "",
+          "type": "address"
+        },
+        {
+          "name": "",
+          "type": "address"
+        },
+        {
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "arbiter",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_productId",
+          "type": "uint256"
+        },
+        {
+          "name": "_buyer",
+          "type": "address"
+        },
+        {
+          "name": "_seller",
+          "type": "address"
+        },
+        {
+          "name": "_arbiter",
+          "type": "address"
+        }
+      ],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_arbiter",
+          "type": "address"
+        }
+      ],
+      "name": "CreateEscrow",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_operation",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "_operator",
+          "type": "address"
+        }
+      ],
+      "name": "UnlockAmount",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_beneficiary",
+          "type": "address"
+        }
+      ],
+      "name": "DisburseAmount",
+      "type": "event"
+    }
+  ],
+  "unlinked_binary": "0x606060405260405160808061073e83398101604052808051919060200180519190602001805191906020018051600086905560018054600160a060020a03808816600160a060020a031992831617909255600280548784169083161790556003805492841692909116919091179055346004556005805460ff1916905591507f7527d0b8d16913563c5afb8fa2dc5b6257355ff7dfbefbdcfc1cf812a0f97c5e905084848484604051938452600160a060020a039283166020850152908216604080850191909152911660608301526080909101905180910390a150505050610651806100ed6000396000f3006060604052600436106100955763ffffffff60e060020a60003504166308551a53811461009a5780630bda4dbf146100c957806358aad10b146100ee5780637150d8ae1461010f578063a97d1b1014610122578063aa8c217c14610141578063b8d08db214610154578063c5ce391114610167578063d1a52e301461017a578063f3d25904146101a1578063fe25e00a146101f9575b600080fd5b34156100a557600080fd5b6100ad61020c565b604051600160a060020a03909116815260200160405180910390f35b34156100d457600080fd5b6100dc61021b565b60405190815260200160405180910390f35b34156100f957600080fd5b61010d600160a060020a0360043516610221565b005b341561011a57600080fd5b6100ad6103cf565b341561012d57600080fd5b61010d600160a060020a03600435166103de565b341561014c57600080fd5b6100dc61058b565b341561015f57600080fd5b6100dc610591565b341561017257600080fd5b6100dc610597565b341561018557600080fd5b61018d61059d565b604051901515815260200160405180910390f35b34156101ac57600080fd5b6101b46105a6565b604051600160a060020a0396871681529486166020860152929094166040808501919091529015156060840152608083019390935260a082015260c001905180910390f35b341561020457600080fd5b6100ad6105d6565b600254600160a060020a031681565b60095481565b60055460ff161561023157600080fd5b600154600160a060020a038281169116148061025a5750600254600160a060020a038281169116145b806102725750600354600160a060020a038281169116145b801561029c5750600160a060020a03811660009081526006602052604090205460ff161515600114155b1561032a57600160a060020a038116600090815260066020526040808220805460ff1916600190811790915560078054909101905590546000805160206105e683398151915291839051918252600160a060020a031660408083019190915260606020830181905260079083015260c860020a6672656c6561736502608083015260a0909101905180910390a15b600754600214156103cc57600254600454600160a060020a039091169080156108fc0290604051600060405180830381858888f19350505050151561036e57600080fd5b6005805460ff19166001179055600054600454600254600080516020610606833981519152929190600160a060020a03166040519283526020830191909152600160a060020a03166040808301919091526060909101905180910390a15b50565b600154600160a060020a031681565b60055460ff16156103ee57600080fd5b600154600160a060020a03828116911614806104175750600254600160a060020a038281169116145b8061042f5750600354600160a060020a038281169116145b80156104595750600160a060020a03811660009081526008602052604090205460ff161515600114155b156104e657600160a060020a038116600090815260086020526040808220805460ff1916600190811790915560098054909101905590546000805160206105e683398151915291839051918252600160a060020a031660408083019190915260606020830181905260069083015260d260020a651c99599d5b9902608083015260a0909101905180910390a15b600954600214156103cc57600154600454600160a060020a039091169080156108fc0290604051600060405180830381858888f19350505050151561052a57600080fd5b6005805460ff1916600190811790915560005460045491546000805160206106068339815191529290600160a060020a03166040519283526020830191909152600160a060020a03166040808301919091526060909101905180910390a150565b60045481565b60075481565b60005481565b60055460ff1681565b600154600254600354600554600754600954600160a060020a0395861696948616959093169360ff909216929091565b600354600160a060020a0316815600e31e37941fee7dca6bb1597da71841499d8cd0dfc5553e0889f6d1ca6038ce96dde1058856b8611b1f49ef2ebaef10c0441e48e8a6cbbec1ebdcbfb1862b57b4a165627a7a7230582044fbe712cce484e1f4eb42b489b72b2bcee63c7b6bd96b58ef4d46153f9d303f0029",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1523329681876
+}
