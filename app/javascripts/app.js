@@ -143,7 +143,8 @@ function renderProductDetails (productId) {
         $('#product-status').html('Product was not sold')
       } else if (currentTime < parseInt(p[6])) {
         $('#bidding').show()
-      } else if (currentTime < (parseInt(p[6]) + 600)) {
+      } else if (currentTime < (parseInt(p[6]) + 300)) {
+        // 5min之后才能开始仲裁
         $('#revealing').show()
       } else {
         $('#finalize-auction').show()

@@ -34,15 +34,16 @@ $ npm run dev
 ## tools
 
 ```bash
-truffle compile
-truffle migrate --reset
-
-
+$ truffle compile
+$ truffle migrate --reset
+$ truffle console
 ```
 
 ```
-exec seed.js
-var c
-c = EcommerceStore.deployed().then(i=> c=i;); 
+exec seed.js;
+var c;
+c = EcommerceStore.deployed().then((i)=> {c=i});
+var e;
+e = Escrow.at("");
 
 ```
