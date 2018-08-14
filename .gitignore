@@ -38,3 +38,4 @@ thumbs.db
 .svn
 .CVS
 node_modules/
+build/
