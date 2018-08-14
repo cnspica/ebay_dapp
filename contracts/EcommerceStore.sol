@@ -1,41 +1,21 @@
-pragma solidity ^0.4.18;
+pragma solidity ^ 0.4 .18;
 
-import "../contracts/Escrow.sol";
+import "contracts/Escrow.sol";
 
 contract EcommerceStore {
-    enum ProductStatus {Open, Sold, Unsold}
-    enum ProductCondition {New, Used}
-
-    // 给加入到商店的每个商品赋予一个 id
-    uint public productIndex;
-
-    // 任何人都可以免费列出商店里的产品。
-    // 跟踪谁插入了商品。键为商家的账户地址，值为 productIndex 到 Product 结果的 mapping.
-    mapping(address => mapping(uint => Product)) stores;
-
-    // 用于跟踪商品在哪个商店
-    mapping(uint => address) productIdInStore;
-
-    //    用于跟踪商品成交的第三方见证人
-    mapping(uint => address) productEscrow;
-
-    struct Product {
-        uint id;
-        string name;
-        string category;
-        string imageLink;
-        string descLink;
-        uint auctionStartTime;
-        uint auctionEndTime;
-        uint startPrice;
-        address highestBidder;
-        uint highestBid;
-        uint secondHighestBid;
-        uint totalBids;
-        ProductStatus status;
-        ProductCondition condition;
-        mapping(address => mapping(bytes32 => Bid)) bids; // 记录谁投了票
+    enum ProductStatus {
+        Open,
+        Sold,
+        Unsold
     }
+    enum ProductCondition {
+        New,
+        Used
+    }
+    uint public productIndex;
+    mapping(address => mapping(uint => Product)) stores;
+    mapping(uint => address) productIdInStore;
+    mapping(uint => address) productEscrow;
 
     struct Bid {
         address bidder;
@@ -44,27 +24,40 @@ contract EcommerceStore {
         bool revealed;
     }
 
+    struct Product {
+        uint id; //产品id
+        string name; //产品名字
+        string category; //分类
+        string imageLink; //图片hash
+        string descLink; //图片描述信息的hash
+        uint auctionStartTime; //开始竞标的时间
+        uint auctionEndTime; // 竞标结束时间
+        uint startPrice; // 拍卖价格
+        address highestBidder; // 赢家的钱包地址
+        uint highestBid; // 赢家竞标的价格
+        uint secondHighestBid; // 第二高的这个人的地址
+        uint totalBids; // 一共有多少人参与竞标
+        ProductStatus status; //状态
+        ProductCondition condition; // 新、旧
+        mapping(address => mapping(bytes32 => Bid)) bids;
+    }
+
     function EcommerceStore() public {
         productIndex = 0;
     }
 
-    event NewProduct(uint _productId, string _name, string _category, string _imageLink, string _descLink, uint _auctionStartTime, uint _auctionEndTime, uint _startPrice, uint _productCondition);
-
-    function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _auctionStartTime,
-        uint _auctionEndTime, uint _startPrice, uint _productCondition) public {
+    /*  添加产品到区块链*/
+    function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _auctionStartTime, uint _auctionEndTime, uint _startPrice, uint _productCondition) public {
         require(_auctionStartTime < _auctionEndTime);
         productIndex += 1;
-        Product memory product = Product(productIndex, _name, _category, _imageLink, _descLink, _auctionStartTime, _auctionEndTime,
-            _startPrice, 0, 0, 0, 0, ProductStatus.Open, ProductCondition(_productCondition));
+        Product memory product = Product(productIndex, _name, _category, _imageLink, _descLink, _auctionStartTime, _auctionEndTime, _startPrice, 0, 0, 0, 0, ProductStatus.Open, ProductCondition(_productCondition));
         stores[msg.sender][productIndex] = product;
         productIdInStore[productIndex] = msg.sender;
-        NewProduct(productIndex, _name, _category, _imageLink, _descLink, _auctionStartTime, _auctionEndTime, _startPrice, _productCondition);
     }
-
+    /* 通过产品ID读取产品信息 */
     function getProduct(uint _productId) view public returns (uint, string, string, string, string, uint, uint, uint, ProductStatus, ProductCondition) {
         Product memory product = stores[productIdInStore[_productId]][_productId];
-        return (product.id, product.name, product.category, product.imageLink, product.descLink, product.auctionStartTime,
-        product.auctionEndTime, product.startPrice, product.status, product.condition);
+        return (product.id, product.name, product.category, product.imageLink, product.descLink, product.auctionStartTime, product.auctionEndTime, product.startPrice, product.status, product.condition);
     }
 
     function bid(uint _productId, bytes32 _bid) payable public returns (bool) {
@@ -82,45 +75,46 @@ contract EcommerceStore {
         Product storage product = stores[productIdInStore[_productId]][_productId];
         require(now > product.auctionEndTime);
         bytes32 sealedBid = sha3(_amount, _secret);
-
         Bid memory bidInfo = product.bids[msg.sender][sealedBid];
         require(bidInfo.bidder > 0);
+        //0xf55 uint160
         require(bidInfo.revealed == false);
-
         uint refund;
-
+        // 退款
         uint amount = stringToUint(_amount);
-
-        if (bidInfo.value < amount) {
-            // They didn't send enough amount, they lost
+        if (bidInfo.value < amount) {//mask  < actual
             refund = bidInfo.value;
         } else {
-            // If first to reveal set as highest bidder
             if (address(product.highestBidder) == 0) {
                 product.highestBidder = msg.sender;
                 product.highestBid = amount;
                 product.secondHighestBid = product.startPrice;
                 refund = bidInfo.value - amount;
+                // mask 20 actual 10.5
             } else {
+                // 15  mask 25
                 if (amount > product.highestBid) {
                     product.secondHighestBid = product.highestBid;
                     product.highestBidder.transfer(product.highestBid);
-                    // 退回
                     product.highestBidder = msg.sender;
                     product.highestBid = amount;
+                    //15
                     refund = bidInfo.value - amount;
+                    // 20 - 15
                 } else if (amount > product.secondHighestBid) {
+                    // 13   18
                     product.secondHighestBid = amount;
+                    //13
                     refund = amount;
+                    //
                 } else {
                     refund = amount;
                 }
             }
-        }
-        product.bids[msg.sender][sealedBid].revealed = true;
-
-        if (refund > 0) {
-            msg.sender.transfer(refund);
+            if (refund > 0) {
+                msg.sender.transfer(refund);
+                product.bids[msg.sender][sealedBid].revealed = true;
+            }
         }
     }
 
@@ -147,7 +141,7 @@ contract EcommerceStore {
 
     function finalizeAuction(uint _productId) public {
         Product memory product = stores[productIdInStore[_productId]][_productId];
-        // 48 hours to reveal the bid
+
         require(now > product.auctionEndTime);
         require(product.status == ProductStatus.Open);
         require(product.highestBidder != msg.sender);
@@ -156,14 +150,11 @@ contract EcommerceStore {
         if (product.totalBids == 0) {
             product.status = ProductStatus.Unsold;
         } else {
-            // Whoever finalizes the auction is the arbiter
-            //            Escrow escrow = (new Escrow()).value(product.secondHighestBid)(_productId, product.highestBidder, productIdInStore[_productId], msg.sender);
-            Escrow escrow = (new Escrow).value(product.secondHighestBid)(_productId, product.highestBidder, productIdInStore[_productId], msg.sender);
 
+            Escrow escrow = (new Escrow).value(product.secondHighestBid)(_productId, product.highestBidder, productIdInStore[_productId], msg.sender);
             productEscrow[_productId] = address(escrow);
             product.status = ProductStatus.Sold;
-            // The bidder only pays the amount equivalent to second highest bidder
-            // Refund the difference
+
             uint refund = product.highestBid - product.secondHighestBid;
             product.highestBidder.transfer(refund);
 

@@ -1,15 +1,15 @@
 pragma solidity ^0.4.18;
 
 contract Escrow {
-    uint public productId;
-    address public buyer;
-    address public seller;
-    address public arbiter;
-    uint public amount;
-    bool public fundsDisbursed; // 是否已经支付给卖家或者买家
-    mapping(address => bool) releaseAmount; // 支付给卖家
+    uint public productId; // 产品id
+    address public buyer; //买家
+    address public seller; //卖家
+    address public arbiter;  //仲裁
+    uint public amount; //存储钱
+    bool public fundsDisbursed; //
+    mapping(address => bool) releaseAmount;
     uint public releaseCount;
-    mapping(address => bool) refundAmount; // 退给买家
+    mapping(address => bool) refundAmount;
     uint public refundCount;
 
     event CreateEscrow(uint _productId, address _buyer, address _seller, address _arbiter);

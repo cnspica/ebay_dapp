@@ -6,7 +6,7 @@ import "../contracts/MetaCoin.sol";
 
 contract TestMetacoin {
 
-  function testInitialBalanceUsingDeployedContract() public {
+  function testInitialBalanceUsingDeployedContract() {
     MetaCoin meta = MetaCoin(DeployedAddresses.MetaCoin());
 
     uint expected = 10000;
@@ -14,7 +14,7 @@ contract TestMetacoin {
     Assert.equal(meta.getBalance(tx.origin), expected, "Owner should have 10000 MetaCoin initially");
   }
 
-  function testInitialBalanceWithNewMetaCoin() public {
+  function testInitialBalanceWithNewMetaCoin() {
     MetaCoin meta = new MetaCoin();
 
     uint expected = 10000;
