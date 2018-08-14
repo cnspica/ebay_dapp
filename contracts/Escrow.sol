@@ -6,10 +6,10 @@ contract Escrow {
     address public seller; //卖家
     address public arbiter;  //仲裁
     uint public amount; //存储钱
-    bool public fundsDisbursed; //
-    mapping(address => bool) releaseAmount;
+    bool public fundsDisbursed; //钱是否已经分发出去
+    mapping(address => bool) releaseAmount; // 释放金额给卖家
     uint public releaseCount;
-    mapping(address => bool) refundAmount;
+    mapping(address => bool) refundAmount; // 退款金额给买家
     uint public refundCount;
 
     event CreateEscrow(uint _productId, address _buyer, address _seller, address _arbiter);

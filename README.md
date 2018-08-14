@@ -28,7 +28,7 @@
 $ cd ebay_dapp
 $ vim truffle.js
 $ npm install
-$ npm start  
+$ npm run dev
 ```
 
 ## tools
@@ -36,6 +36,8 @@ $ npm start
 ```bash
 truffle compile
 truffle migrate --reset
+
+
 ```
 
 ```

@@ -1,4 +1,4 @@
-pragma solidity ^ 0.4 .18;
+pragma solidity ^0.4.18;
 
 import "contracts/Escrow.sol";
 
@@ -15,7 +15,7 @@ contract EcommerceStore {
     uint public productIndex;
     mapping(address => mapping(uint => Product)) stores;
     mapping(uint => address) productIdInStore;
-    mapping(uint => address) productEscrow;
+    mapping(uint => address) productEscrow; // 商品对应的仲裁合约地址
 
     struct Bid {
         address bidder;
@@ -139,6 +139,7 @@ contract EcommerceStore {
         return result;
     }
 
+    // 创建托管合约
     function finalizeAuction(uint _productId) public {
         Product memory product = stores[productIdInStore[_productId]][_productId];
 
@@ -146,6 +147,7 @@ contract EcommerceStore {
         require(product.status == ProductStatus.Open);
         require(product.highestBidder != msg.sender);
         require(productIdInStore[_productId] != msg.sender);
+
 
         if (product.totalBids == 0) {
             product.status = ProductStatus.Unsold;

@@ -120,7 +120,7 @@ window.App = {
 function renderProductDetails (productId) {
   EcommerceStore.deployed().then(function (i) {
     i.getProduct.call(productId).then(function (p) {
-      console.log(p)
+      console.log('product detail', p)
       let content = ''
       ipfs.cat(p[4]).then(function (stream) {
 
@@ -130,7 +130,7 @@ function renderProductDetails (productId) {
 
       })
 
-      $('#product-image').append('<img src=\'https://ipfs.io/ipfs/' + p[3] + '\' width=\'250px\' />')
+      $('#product-image').append('<img src=\'http://localhost:8080/ipfs/' + p[3] + '\' width=\'250px\' />')
       $('#product-price').html(displayPrice(p[7]))
       $('#product-name').html(p[1].name)
       $('#product-auction-end').html(displayEndHours(p[6]))
@@ -290,40 +290,23 @@ function saveTextBlobOnIpfs (blob) {
 
 function renderStore () {
   EcommerceStore.deployed().then(function (i) {
-
-    // i.productIndex().then((number) => {
-    //   console.log("产品数量" + number);
-    //   for (var k = 0; k < number; k++) {
-    //     i.getProduct(k + 1).then(function(p) {
-    //       $("#product-list").append(buildProduct(p, k + 1));
-    //     });
-    //   }
-    // });
-    i.getProduct(1).then(function (p) {
-      $('#product-list').append(buildProduct(p, 1))
+    i.productIndex().then((number) => {
+      console.log('产品数量' + number)
+      for (var k = 0; k < number; k++) {
+        let prodId = k + 1;
+        i.getProduct(prodId).then(function (p) {
+          $('#product-list').append(buildProduct(p, prodId))
+        })
+      }
     })
-    i.getProduct(2).then(function (p) {
-      $('#product-list').append(buildProduct(p, 2))
-    })
-    i.getProduct(3).then(function (p) {
-      $('#product-list').append(buildProduct(p, 3))
-    })
-    i.getProduct(4).then(function (p) {
-      $('#product-list').append(buildProduct(p, 4))
-    })
-    i.getProduct(5).then(function (p) {
-      $('#product-list').append(buildProduct(p, 5))
-    })
-    i.getProduct(6).then(function (p) {
-      $('#product-list').append(buildProduct(p, 6))
-    })
-
   })
 }
 
 function buildProduct (product, id) {
   console.log('buildProduct')
   console.log(id)
+
+  // debugger;
   let node = $('<div/>')
   node.addClass('col-sm-3 text-center col-margin-bottom-1')
   node.append('<img src=\'http://localhost:8080/ipfs/' + product[3] + '\' width=\'150px\' />')
